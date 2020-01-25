@@ -5,10 +5,14 @@ description: 'Przykładowa prezentacja'
 
 # gatsby
 
-![](./images/puppy-and-adult-dog.jpg)
+![](images/gatsby-icon.png)
+
+first slide
 
 ---
 
 # gatsby is great
 
-Hot reloading bla bla bla
+second slide
+
+![](./images/puppy-and-adult-dog.jpg)

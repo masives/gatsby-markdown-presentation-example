@@ -1,9 +1,34 @@
 const path = require(`path`);
 const { createFilePath } = require(`gatsby-source-filesystem`);
 
+// Create slide type in grahql
+exports.sourceNodes = ({ actions }) => {
+  actions.createTypes(`
+    type Slide implements Node {
+      html: String!
+      index: Int!
+    }
+  `);
+};
+
+// when Markdown node is created add slug that is the name of the file
+exports.onCreateNode = ({ node, actions, getNode }) => {
+  const { createNodeField } = actions;
+
+  if (node.internal.type === `MarkdownRemark`) {
+    const value = createFilePath({ node, getNode });
+    createNodeField({
+      name: `slug`,
+      node,
+      value,
+    });
+  }
+};
+
 const createPresentationPages = async ({ graphql, actions, createContentDigest, createNodeId }) => {
   const { createPage, createNode } = actions;
 
+  // fetch data of markdown presentations
   const result = await graphql(
     `
       {
@@ -30,6 +55,7 @@ const createPresentationPages = async ({ graphql, actions, createContentDigest, 
   const presentations = result.data.allMarkdownRemark.nodes;
 
   presentations.forEach((presentation) => {
+    // split markdown presentation into slides
     const slideNodes = presentation.html.split('<hr>').map((html, index) => {
       return {
         id: createNodeId(`${presentation.id}_${index + 1} >>> Slide`),
@@ -38,6 +64,7 @@ const createPresentationPages = async ({ graphql, actions, createContentDigest, 
       };
     });
 
+    // create slide node for each slide
     slideNodes.forEach(({ node, html, id }, index) => {
       // create graphql node for each slide
       const pageIndex = index + 1;
@@ -56,7 +83,7 @@ const createPresentationPages = async ({ graphql, actions, createContentDigest, 
       const hasPrev = pageIndex > 1;
       const hasNext = pageIndex < slideNodes.length;
 
-      // create page for each node
+      // create page for each slide
       createPage({
         path: `/presentation${presentation.fields.slug}${pageIndex}`,
         component: path.resolve('./src/templates/slide.jsx'),
@@ -69,7 +96,7 @@ const createPresentationPages = async ({ graphql, actions, createContentDigest, 
     });
   });
 
-  // Create full presentations as fallback.
+  // Create full presentation
   const posts = result.data.allMarkdownRemark.nodes;
   posts.forEach((post, index) => {
     createPage({
@@ -82,15 +109,6 @@ const createPresentationPages = async ({ graphql, actions, createContentDigest, 
   });
 };
 
-exports.sourceNodes = ({ actions }) => {
-  actions.createTypes(`
-    type Slide implements Node {
-      html: String!
-      index: Int!
-    }
-  `);
-};
-
 exports.createPages = async ({ graphql, actions, createContentDigest, createNodeId }) => {
   await createPresentationPages({
     graphql,
@@ -98,17 +116,4 @@ exports.createPages = async ({ graphql, actions, createContentDigest, createNode
     createContentDigest,
     createNodeId,
   });
-};
-
-exports.onCreateNode = ({ node, actions, getNode }) => {
-  const { createNodeField } = actions;
-
-  if (node.internal.type === `MarkdownRemark`) {
-    const value = createFilePath({ node, getNode });
-    createNodeField({
-      name: `slug`,
-      node,
-      value,
-    });
-  }
 };
