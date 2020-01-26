@@ -11,6 +11,6 @@ taki fajny
 
 --- 
 
-# Dlaczego nie coś innego
+# Gatsby jest w React
 
-Bo wszyscy lubią react
+Next.js też
