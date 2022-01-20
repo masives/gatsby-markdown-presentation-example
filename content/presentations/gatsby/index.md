@@ -16,3 +16,7 @@ first slide
 second slide
 
 ![](./images/puppy-and-adult-dog.jpg)
+
+---
+
+# nowy slajd
